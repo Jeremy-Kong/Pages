@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石历文转换器 | Lithocal Converter</title>
+    <meta name="description" content="将任意中文转换为受玛雅文明启发的象形文字">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --gold: #d4af37; --bg: #0a0908; --panel: #1a1814; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Serif SC", serif;
+            background: var(--bg); 
+            color: #e8e6e1; 
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        header { text-align: center; padding: 40px 0; border-bottom: 1px solid #2a2520; margin-bottom: 30px; }
+        h1 { color: var(--gold); font-size: 2.5rem; letter-spacing: 0.2em; text-shadow: 0 0 20px rgba(212,175,55,0.3); }
+        .subtitle { color: #6b5d4d; font-size: 0.9rem; letter-spacing: 0.3em; margin-top: 10px; }
+        
+        .input-section { 
+            background: linear-gradient(135deg, #1a1814 0%, #0f0e0c 100%);
+            border: 1px solid #3d3528;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        textarea { 
+            width: 100%; min-height: 120px; background: rgba(0,0,0,0.3);
+            border: 1px solid #4a4233; color: #e8e6e1; padding: 15px;
+            font-size: 16px; border-radius: 4px; resize: vertical;
+        }
+        textarea:focus { outline: none; border-color: var(--gold); }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        button { 
+            background: linear-gradient(135deg, #3d3528, #252220);
+            border: 1px solid var(--gold); color: var(--gold);
+            padding: 12px 24px; cursor: pointer; border-radius: 4px;
+            font-size: 14px; transition: all 0.3s;
+        }
+        button:hover { background: var(--gold); color: #0a0908; transform: translateY(-2px); }
+        button.primary { background: var(--gold); color: #0a0908; font-weight: bold; }
+        
+        .output-section { 
+            background: #0f0e0c; border: 2px solid #2a2520; 
+            border-radius: 8px; padding: 30px; min-height: 300px;
+        }
+        .stats { color: #6b5d4d; font-size: 14px; margin-bottom: 20px; text-align: center; }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+            gap: 15px; 
+        }
+        .glyph { 
+            aspect-ratio: 1; background: #1a1814; border: 1px solid #3d3528;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s; position: relative;
+            border-radius: 4px;
+        }
+        .glyph:hover { border-color: var(--gold); transform: scale(1.1); z-index: 10; box-shadow: 0 0 20px rgba(212,175,55,0.2); }
+        .glyph svg { width: 70%; height: 70%; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .glyph::after { 
+            content: attr(data-char); position: absolute; bottom: 2px; 
+            font-size: 10px; color: #5a5040; opacity: 0; transition: opacity 0.3s;
+        }
+        .glyph:hover::after { opacity: 1; }
+        
+        footer { text-align: center; padding: 40px 0; color: #4a4233; font-size: 14px; margin-top: 40px; border-top: 1px solid #2a2520; }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+        }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 2px solid #3d3528; border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>石历文转换器</h1>
+            <div class="subtitle">UNIVERSAL LITHOCAL CONVERTER</div>
+        </header>
+        
+        <div class="input-section">
+            <textarea id="input" placeholder="输入任意文字（中文、英文、数字、Emoji均可）...">石历文转换器</textarea>
+            <div class="btn-group">
+                <button class="primary" onclick="convert()">开始转换</button>
+                <button onclick="random()">随机示例</button>
+                <button onclick="copyLink()">复制链接</button>
+            </div>
+        </div>
+        
+        <div class="output-section">
+            <div class="stats" id="stats">等待输入...</div>
+            <div class="grid" id="grid"></div>
+        </div>
+        
+        <footer>
+            <p>基于玛雅美学 | 支持所有 Unicode 字符 | 纯前端运行</p>
+        </footer>
+    </div>
+
+    <script>
+        // 字库
+        const lib = {
+            '日': '<circle cx="50" cy="50" r="20" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="50" r="6" fill="#d4af37"/><path d="M50 20v10M50 70v10M20 50h10M70 50h10" stroke="#d4af37" stroke-width="3"/>',
+            '月': '<path d="M65 20a30 30 0 1 1 0 60a22 22 0 1 0 0-60" fill="#d4af37" opacity="0.8"/>',
+            '山': '<path d="M20 80L35 35L50 55L65 30L80 80" fill="none" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>',
+            '水': '<path d="M20 45q15-10 30 0t30 0M15 65q15-10 30 0t30 0" fill="none" stroke="#d4af37" stroke-width="3"/>',
+            '人': '<circle cx="50" cy="25" r="9" fill="none" stroke="#d4af37" stroke-width="3"/><path d="M50 34v24M32 44h36M50 58l-14 24M50 58l14 24" stroke="#d4af37" stroke-width="3"/>',
+            '王': '<path d="M28 78h44M38 78V42M62 78V42M28 42h44M50 42V22M35 27h30" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="56" r="4" fill="#d4af37"/>',
+            '石': '<path d="M30 75L26 48L50 30l24 18-4 27" fill="none" stroke="#d4af37" stroke-width="3"/>',
+            '历': '<rect x="30" y="20" width="40" height="60" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="30" y1="35" x2="70" y2="35" stroke="#d4af37"/><line x1="30" y1="50" x2="70" y2="50" stroke="#d4af37"/><line x1="30" y1="65" x2="70" y2="65" stroke="#d4af37"/>',
+            '文': '<path d="M50 15v70M25 35q25-10 50 0M30 60q20 10 40 0" stroke="#d4af37" stroke-width="3" fill="none"/>',
+            '转': '<circle cx="50" cy="50" r="25" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M50 25v50M25 50h50" stroke="#d4af37"/><path d="M35 35l30 30M65 35L35 65" stroke="#d4af37" stroke-width="2"/>',
+            '换': '<rect x="25" y="25" width="50" height="50" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="40" cy="40" r="5" fill="#d4af37"/><circle cx="60" cy="40" r="5" fill="#d4af37"/><circle cx="40" cy="60" r="5" fill="#d4af37"/><circle cx="60" cy="60" r="5" fill="#d4af37"/>',
+            '器': '<rect x="20" y="20" width="25" height="25" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="55" y="20" width="25" height="25" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="20" y="55" width="25" height="25" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="55" y="55" width="25" height="25" fill="none" stroke="#d4af37" stroke-width="2"/>'
+        };
+
+        // 拼音映射
+        const py = {a:'<circle cx="50" cy="50" r="25" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="50" r="5" fill="#d4af37"/>',b:'<rect x="30" y="30" width="40" height="40" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="50" r="8" fill="#d4af37"/>',c:'<path d="M70 30A25 25 0 1 0 70 70" fill="none" stroke="#d4af37" stroke-width="3"/>',d:'<rect x="35" y="25" width="30" height="50" fill="none" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="50" x2="65" y2="50" stroke="#d4af37"/>',e:'<rect x="25" y="25" width="50" height="50" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="25" y1="40" x2="75" y2="40" stroke="#d4af37"/><line x1="25" y1="60" x2="75" y2="60" stroke="#d4af37"/>',f:'<line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="30" y1="35" x2="70" y2="35" stroke="#d4af37"/><line x1="30" y1="55" x2="60" y2="55" stroke="#d4af37"/>',g:'<circle cx="50" cy="50" r="22" fill="none" stroke="#d4af37" stroke-width="3"/><line x1="65" y1="65" x2="75" y2="75" stroke="#d4af37" stroke-width="3"/>',h:'<line x1="35" y1="20" x2="35" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="65" y1="20" x2="65" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="50" x2="65" y2="50" stroke="#d4af37"/>',i:'<line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="15" r="3" fill="#d4af37"/>',j:'<line x1="50" y1="15" x2="50" y2="70" stroke="#d4af37" stroke-width="3"/><path d="M35 75q15 10 30 0" fill="none" stroke="#d4af37"/>',k:'<line x1="35" y1="20" x2="35" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="50" x2="70" y2="30" stroke="#d4af37"/><line x1="35" y1="50" x2="70" y2="70" stroke="#d4af37"/>',l:'<line x1="50" y1="20" x2="50" y2="75" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="75" x2="65" y2="75" stroke="#d4af37" stroke-width="3"/>',m:'<path d="M25 80V40q0-15 15-5 10 5 10 5 10-10 25 0v40" fill="none" stroke="#d4af37" stroke-width="2"/>',n:'<path d="M30 80V45q0-10 10-5 10 5 20 0 10-5 10 5v35" fill="none" stroke="#d4af37" stroke-width="2"/>',o:'<circle cx="50" cy="50" r="25" fill="none" stroke="#d4af37" stroke-width="3"/>',p:'<line x1="35" y1="30" x2="35" y2="80" stroke="#d4af37" stroke-width="3"/><circle cx="52" cy="45" r="17" fill="none" stroke="#d4af37" stroke-width="2"/>',q:'<circle cx="50" cy="55" r="20" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="65" y1="70" x2="75" y2="80" stroke="#d4af37" stroke-width="3"/>',r:'<line x1="35" y1="30" x2="35" y2="80" stroke="#d4af37" stroke-width="3"/><path d="M35 45q15-10 25 0 5 5 0 15" fill="none" stroke="#d4af37"/>',s:'<path d="M65 35q-25 0-25 15t25 15q-25 0-25 15" fill="none" stroke="#d4af37" stroke-width="3"/>',t:'<line x1="50" y1="15" x2="50" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="30" y1="30" x2="70" y2="30" stroke="#d4af37" stroke-width="2"/>',u:'<path d="M30 30v35q0 20 20 10 10-5 10-5 10 15 20 0V30" fill="none" stroke="#d4af37" stroke-width="2"/>',v:'<path d="M30 30L50 80 70 30" fill="none" stroke="#d4af37" stroke-width="3"/>',w:'<path d="M25 30l10 50 15-30 15 30 10-50" fill="none" stroke="#d4af37" stroke-width="2"/>',x:'<line x1="30" y1="30" x2="70" y2="70" stroke="#d4af37" stroke-width="3"/><line x1="70" y1="30" x2="30" y2="70" stroke="#d4af37" stroke-width="3"/>',y:'<line x1="35" y1="20" x2="50" y2="50" stroke="#d4af37" stroke-width="2"/><line x1="65" y1="20" x2="35" y2="80" stroke="#d4af37" stroke-width="2"/>',z:'<line x1="30" y1="30" x2="70" y2="30" stroke="#d4af37" stroke-width="2"/><line x1="70" y1="30" x2="30" y2="70" stroke="#d4af37" stroke-width="2"/><line x1="30" y1="70" x2="70" y2="70" stroke="#d4af37" stroke-width="2"/>'};
+
+        const pinyinMap = {'的':'d','一':'y','是':'s','不':'b','了':'l','在':'z','人':'r','有':'y','我':'w','他':'t','这':'z','个':'g','们':'m','中':'z','来':'l','上':'s','大':'d','为':'w','和':'h','国':'g','地':'d','到':'d','以':'y','说':'s','时':'s','要':'y','就':'j','出':'c','会':'h','可':'k','也':'y','你':'n','对':'d','生':'s','能':'n','而':'e','子':'z','那':'n','得':'d','于':'y','着':'z','下':'x','自':'z','之':'z','年':'n','过':'g','发':'f','后':'h','作':'z','里':'l','用':'y','道':'d','行':'x','所':'s','然':'r','家':'j','种':'z','事':'s','成':'c','方':'f','多':'d','经':'j','么':'m','去':'q','法':'f','学':'x','如':'r','都':'d','同':'t','现':'x','当':'d','没':'m','动':'d','面':'m','起':'q','看':'k','定':'d','天':'t','分':'f','还':'h','进':'j','小':'x','部':'b','其':'q','些':'x','主':'z','样':'y','理':'l','心':'x','她':'t','本':'b','前':'q','开':'k','但':'d','因':'y','只':'z','从':'c','想':'x','实':'s','日':'r','军':'j','者':'z','意':'y','无':'w','力':'l','它':'t','与':'y','长':'c','把':'b','机':'j','十':'s','民':'m','第':'d','公':'g','此':'c','已':'y','工':'g','使':'s','情':'q','明':'m','性':'x','知':'z','全':'q','三':'s','又':'y','关':'g','点':'d','正':'z','业':'y','外':'w','将':'j','两':'l','高':'g','间':'j','由':'y','问':'w','很':'h','最':'z','重':'z','并':'b','物':'w','手':'s','应':'y','战':'z','向':'x','头':'t','文':'w','体':'t','政':'z','美':'m','相':'x','被':'b','利':'l','什':'s','二':'e','等':'d','产':'c','或':'h','新':'x','己':'j','制':'z','身':'s','果':'g','加':'j','西':'x','斯':'s','月':'y','话':'h','合':'h','回':'h','特':'t','代':'d','内':'n','信':'x','表':'b','化':'h','老':'l','给':'g','世':'s','位':'w','次':'c','度':'d','门':'m','任':'r','常':'c','先':'x','海':'h','通':'t','教':'j','儿':'e','原':'y','东':'d','声':'s','提':'t','立':'l','及':'j','比':'b','员':'y','解':'j','水':'s','名':'m','真':'z','论':'l','处':'c','世':'s','界':'j','风':'f','云':'y','山':'s','龙':'l','万':'w','岁':'s','华':'h','族':'z','复':'f','兴':'x','伟':'w','爱':'a','您':'n','好':'h','请':'q','谢':'x'};
+
+        function getPinyin(char) {
+            if (pinyinMap[char]) return pinyinMap[char];
+            const code = char.charCodeAt(0);
+            const map = 'abcdefghijklmnopqrstuvwxyz';
+            return map[code % 26];
+        }
+
+        function generate(char) {
+            if (lib[char]) return {svg: lib[char], type: 'base'};
+            const initial = getPinyin(char);
+            let svg = py[initial] || py['a'];
+            const strokes = (char.charCodeAt(0) % 15) + 1;
+            const deco = ['','<circle cx="50" cy="15" r="3" fill="#d4af37"/>','<line x1="30" y1="15" x2="70" y2="15" stroke="#d4af37"/>','<path d="M30 15l20 10 20-10" fill="none" stroke="#d4af37"/>','<rect x="35" y="10" width="30" height="10" fill="none" stroke="#d4af37"/>','<circle cx="50" cy="15" r="3" fill="#d4af37"/><line x1="35" y1="15" x2="65" y2="15" stroke="#d4af37"/>'][Math.min(strokes,5)];
+            return {svg: `<g transform="translate(0,8)">${svg}</g>${deco}`, type: 'gen'};
+        }
+
+        function convert() {
+            const input = document.getElementById('input').value;
+            const grid = document.getElementById('grid');
+            const stats = document.getElementById('stats');
+            
+            grid.innerHTML = '';
+            if (!input.trim()) { stats.textContent = '请输入文字'; return; }
+            
+            let count = 0, gen = 0;
+            for (let char of input) {
+                if (char === ' ' || char === '\n') continue;
+                const g = generate(char);
+                const div = document.createElement('div');
+                div.className = 'glyph';
+                div.setAttribute('data-char', char);
+                div.innerHTML = `<svg viewBox="0 0 100 100">${g.svg}</svg>`;
+                div.onclick = () => alert(`字符：${char}\n类型：${g.type === 'base' ? '标准象形' : '算法生成'}`);
+                grid.appendChild(div);
+                count++; if (g.type === 'gen') gen++;
+            }
+            stats.textContent = `共 ${count} 字（${count-gen} 标准 + ${gen} 生成）`;
+        }
+
+        function random() {
+            const examples = ['中华民族伟大复兴','龘靐齉齾','Hello World 123','🌟日月星辰✨','道可道非常道'];
+            document.getElementById('input').value = examples[Math.floor(Math.random()*examples.length)];
+            convert();
+        }
+
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => alert('链接已复制！'));
+        }
+
+        // URL参数支持
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const text = params.get('text');
+            if (text) {
+                document.getElementById('input').value = decodeURIComponent(text);
+                convert();
+            } else {
+                convert();
+            }
+        };
+    </script>
+</body>
+</html>
