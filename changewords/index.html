@@ -3,340 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>石历文转换器 - Lithocal Converter (Universal)</title>
-    <meta name="description" content="实时将中文、英文、数字转换为玛雅风格象形文字">
+    <title>石历文转换器 - 双语象形版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { 
-            --gold: #d4af37; 
-            --bg: #0a0908; 
-            --panel: #151412;
-            --border: #2a2520;
-        }
+        :root { --gold: #d4af37; --bg: #0a0908; --panel: #151412; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Serif SC", serif;
+            font-family: "Noto Serif SC", "SimSun", serif;
             background: var(--bg); 
             color: #e8e6e1; 
             line-height: 1.6;
-            min-height: 100vh;
         }
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
         
-        header { 
-            text-align: center; 
-            padding: 30px 0; 
-            border-bottom: 1px solid var(--border); 
-            margin-bottom: 20px;
-        }
-        h1 { 
-            color: var(--gold); 
-            font-size: 2rem; 
-            letter-spacing: 0.15em; 
-            text-shadow: 0 0 20px rgba(212,175,55,0.3);
-        }
-        .subtitle { color: #5a5040; font-size: 0.85rem; margin-top: 5px; letter-spacing: 0.2em; }
+        header { text-align: center; padding: 30px 0; border-bottom: 1px solid #2a2520; margin-bottom: 20px; }
+        h1 { color: var(--gold); font-size: 2.2rem; letter-spacing: 0.2em; text-shadow: 0 0 20px rgba(212,175,55,0.3); }
+        .subtitle { color: #5a5040; font-size: 0.85rem; letter-spacing: 0.15em; margin-top: 8px; }
         
-        .main-layout {
+        .main-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
         }
+        @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
         
-        @media (min-width: 768px) {
-            .main-layout {
-                grid-template-columns: 300px 1fr;
-            }
-        }
-        
-        .input-panel {
+        .panel {
             background: var(--panel);
-            border: 1px solid var(--border);
+            border: 1px solid #2a2520;
             border-radius: 8px;
-            padding: 20px;
-            height: fit-content;
+            padding: 25px;
         }
-        
-        .input-group { margin-bottom: 20px; }
-        label { display: block; color: var(--gold); margin-bottom: 8px; font-size: 0.9rem; }
         
         textarea { 
-            width: 100%; 
-            height: 150px; 
+            width: 100%; height: 140px; 
             background: rgba(0,0,0,0.3);
-            border: 1px solid #3d3528; 
-            color: #e8e6e1; 
-            padding: 12px;
-            font-size: 16px; 
-            border-radius: 4px;
-            resize: vertical;
+            border: 1px solid #3d3528; color: #e8e6e1; 
+            padding: 12px; font-size: 16px; resize: vertical;
             font-family: inherit;
         }
         textarea:focus { outline: none; border-color: var(--gold); }
         
-        .options { margin-top: 15px; }
-        .option-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            color: #8b7355;
-            font-size: 0.9rem;
-            cursor: pointer;
+        .options { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .option-row {
+            display: flex; align-items: center; gap: 8px;
+            color: #8b7355; font-size: 0.9rem; cursor: pointer;
         }
-        .option-item input[type="checkbox"] {
-            accent-color: var(--gold);
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
+        .option-row input { accent-color: var(--gold); }
         
-        .output-panel {
-            background: var(--panel);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 25px;
-            min-height: 500px;
+        button { 
+            background: linear-gradient(135deg, #3d3528, #252220);
+            border: 1px solid var(--gold); color: var(--gold);
+            padding: 10px 20px; cursor: pointer; border-radius: 4px;
+            transition: all 0.3s; font-family: inherit;
         }
+        button:hover { background: var(--gold); color: #000; }
+        button.secondary { border-color: #4a4233; color: #8b7355; }
+        button.secondary:hover { border-color: var(--gold); color: var(--gold); background: transparent; }
         
+        .output-area { min-height: 500px; }
         .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-            gap: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #2a2520;
+            flex-wrap: wrap; gap: 10px;
         }
-        
         .stats { color: #6b5d4d; font-size: 0.85rem; }
         
-        .btn-group { display: flex; gap: 8px; }
-        button { 
-            background: transparent;
-            border: 1px solid #4a4233;
-            color: var(--gold);
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-        button:hover { background: var(--gold); color: #000; border-color: var(--gold); }
-        
-        .glyph-grid { 
+        .glyph-container { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); 
+            gap: 15px;
         }
         
-        .glyph-block { 
+        .glyph-card { 
             aspect-ratio: 1; 
             background: linear-gradient(135deg, #1a1814 0%, #0f0e0c 100%);
-            border: 1px solid #3d3528;
+            border: 2px solid #3d3528;
             border-radius: 6px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; cursor: pointer; transition: all 0.3s;
             padding: 8px;
         }
         
-        .glyph-block:hover { 
-            border-color: var(--gold); 
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(212,175,55,0.2);
-        }
+        /* 汉字样式 - 金色粗线 */
+        .glyph-card.cn { border-color: #4a4233; }
+        .glyph-card.cn:hover { border-color: var(--gold); box-shadow: 0 0 20px rgba(212,175,55,0.25); }
         
-        .glyph-block.space {
-            background: transparent;
-            border-style: dashed;
-            opacity: 0.3;
+        /* 英文大写 - 神圣双边框 */
+        .glyph-card.en-upper { 
+            border: 3px double #5a5040; 
+            background: linear-gradient(135deg, #252220 0%, #1a1814 100%);
         }
-        
-        .glyph-block.punctuation {
-            border-color: #4a4233;
-            background: rgba(212,175,55,0.05);
+        .glyph-card.en-upper::before {
+            content: '◆'; position: absolute; top: -8px; left: 50%;
+            transform: translateX(-50%); color: var(--gold); font-size: 10px;
+            background: var(--bg); padding: 0 4px;
         }
+        .glyph-card.en-upper:hover { border-color: var(--gold); }
         
-        .glyph-block.uppercase {
-            border-width: 2px;
-            border-color: #5a5040;
-            background: linear-gradient(135deg, #2a2520 0%, #1a1814 100%);
+        /* 英文小写 - 细线 */
+        .glyph-card.en-lower { border-color: #2a2520; opacity: 0.9; }
+        .glyph-card.en-lower:hover { border-color: #5a5040; opacity: 1; }
+        
+        /* 数字 - 点线系统 */
+        .glyph-card.num { border-style: dashed; border-color: #4a4233; }
+        .glyph-card.num:hover { border-style: solid; border-color: var(--gold); }
+        
+        .glyph-svg { width: 100%; height: 100%; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+        
+        .glyph-label {
+            position: absolute; bottom: 4px;
+            font-size: 10px; color: #5a5040;
+            opacity: 0; transition: opacity 0.3s;
+            background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 3px;
         }
+        .glyph-card:hover .glyph-label { opacity: 1; color: var(--gold); }
         
-        .glyph-block.uppercase::before {
-            content: '◆';
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--gold);
-            font-size: 10px;
-            background: var(--bg);
-            padding: 0 4px;
+        .empty-state { color: #4a4233; text-align: center; padding: 80px 20px; font-style: italic; grid-column: 1/-1; }
+        
+        .legend {
+            margin-top: 25px; padding-top: 20px; border-top: 1px solid #2a2520;
+            display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.8rem; color: #5a5040;
         }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-box { width: 16px; height: 16px; border: 2px solid #4a4233; border-radius: 3px; }
+        .legend-box.cn { border-color: var(--gold); border-width: 2px; }
+        .legend-box.en-upper { border: 3px double #5a5040; }
+        .legend-box.en-lower { border-color: #2a2520; opacity: 0.7; }
+        .legend-box.num { border-style: dashed; }
         
-        .glyph-svg { 
-            width: 100%; 
-            height: 100%; 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-        }
-        
-        .glyph-tag {
-            position: absolute;
-            bottom: 2px;
-            font-size: 9px;
-            color: #4a4233;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        
-        .glyph-block:hover .glyph-tag { opacity: 1; }
-        
-        .empty-state {
-            text-align: center;
-            color: #4a4233;
-            padding: 60px 20px;
-            grid-column: 1 / -1;
-            font-style: italic;
-        }
-        
-        .category-legend {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            font-size: 0.8rem;
-            color: #5a5040;
-        }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-box { width: 12px; height: 12px; border: 1px solid; border-radius: 2px; }
-        
-        footer {
-            text-align: center;
-            padding: 30px 0;
-            color: #3d3528;
-            font-size: 0.85rem;
-            margin-top: 40px;
-        }
+        footer { text-align: center; padding: 30px; color: #3d3528; font-size: 0.85rem; margin-top: 30px; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>石历文转换器</h1>
-            <div class="subtitle">支持中英文、数字、符号实时转换</div>
+            <div class="subtitle">汉字象形 · 英文神圣 · 玛雅数字</div>
         </header>
         
-        <div class="main-layout">
-            <div class="input-panel">
-                <div class="input-group">
-                    <label>输入内容</label>
-                    <textarea id="input" placeholder="输入任意文字（中文、English、123、!@#）..." autofocus>Hello 世界 2024</textarea>
-                </div>
+        <div class="main-grid">
+            <div class="panel input-panel">
+                <label style="color:var(--gold); display:block; margin-bottom:8px;">输入内容</label>
+                <textarea id="input" placeholder="支持中英文混合输入..." autofocus>Hello 世界 2024</textarea>
                 
                 <div class="options">
-                    <label class="option-item">
+                    <label class="option-row">
                         <input type="checkbox" id="realtime" checked>
                         <span>实时转换</span>
                     </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="showTags" checked>
+                    <label class="option-row">
+                        <input type="checkbox" id="showLabel" checked>
                         <span>显示原字符</span>
                     </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="uppercaseSpecial" checked>
-                        <span>大写字母特殊标记</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" id="keepSpace">
-                        <span>保留空格占位</span>
+                    <label class="option-row">
+                        <input type="checkbox" id="showSpace">
+                        <span>显示空格占位</span>
                     </label>
                 </div>
                 
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
-                    <button onclick="clearText()" style="width: 100%;">清空内容</button>
+                <div style="margin-top:20px; display:flex; gap:10px;">
+                    <button onclick="manualConvert()" style="flex:1;">手动转换</button>
+                    <button class="secondary" onclick="clearAll()">清空</button>
+                </div>
+                
+                <div style="margin-top:20px; padding-top:20px; border-top:1px solid #2a2520; font-size:0.85rem; color:#6b5d4d; line-height:1.8;">
+                    <strong style="color:var(--gold);">支持字符：</strong><br>
+                    • 汉字：常用3500字象形符号<br>
+                    • 英文：A-Z神圣风格 / a-z几何风格<br>
+                    • 数字：0-9玛雅点线系统<br>
+                    • 符号：常用标点自动识别
                 </div>
             </div>
             
-            <div class="output-panel">
+            <div class="panel output-area">
                 <div class="toolbar">
                     <div class="stats" id="stats">等待输入...</div>
-                    <div class="btn-group">
-                        <button onclick="copyText()">复制文本</button>
-                        <button onclick="downloadSVG()">导出SVG</button>
-                    </div>
+                    <button onclick="copySVG()" style="font-size:0.85rem;">复制SVG代码</button>
                 </div>
                 
-                <div class="glyph-grid" id="grid">
-                    <div class="empty-state">在左侧输入文字，此处实时显示石历文</div>
+                <div class="glyph-container" id="container">
+                    <div class="empty-state">在左侧输入文字，此处显示石历文转换结果</div>
                 </div>
                 
-                <div class="category-legend">
-                    <div class="legend-item">
-                        <div class="legend-box" style="border-color: var(--gold);"></div>
-                        <span>中文象形</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-box" style="border-color: #5a5040; border-width: 2px;"></div>
-                        <span>英文大写</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-box" style="border-color: #3d3528;"></div>
-                        <span>英文小写/数字</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-box" style="border-style: dashed; opacity: 0.5;"></div>
-                        <span>空格</span>
-                    </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-box cn"></div> <span>汉字象形</span></div>
+                    <div class="legend-item"><div class="legend-box en-upper"></div> <span>英文大写（神圣）</span></div>
+                    <div class="legend-item"><div class="legend-box en-lower"></div> <span>英文小写（几何）</span></div>
+                    <div class="legend-item"><div class="legend-box num"></div> <span>数字（玛雅）</span></div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>石历文系统 | 玛雅美学 | 实时转换引擎</p>
+            <p>石历文系统 v2.0 | 汉字保留石碑雕刻美学 | 英文大写带神圣冠饰</p>
         </footer>
     </div>
 
     <script>
-        // 中文字库（标准象形）
+        // ==================== 汉字象形字库（第一版风格） ====================
         const cnLib = {
-            '日': '<circle cx="50" cy="50" r="18" fill="none" stroke="#d4af37" stroke-width="2.5"/><circle cx="50" cy="50" r="5" fill="#d4af37"/><path d="M50 25v8M50 67v8M25 50h8M67 50h8" stroke="#d4af37" stroke-width="2.5"/>',
-            '月': '<path d="M60 25a20 20 0 1 0 0 50a15 15 0 1 1 0-50" fill="#d4af37" opacity="0.9"/>',
-            '山': '<path d="M20 75L35 35L50 55L65 30L80 75" fill="none" stroke="#d4af37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
-            '水': '<path d="M20 45q15-10 30 0t30 0M15 65q15-10 30 0t30 0" fill="none" stroke="#d4af37" stroke-width="2.5"/>',
-            '人': '<circle cx="50" cy="28" r="7" fill="none" stroke="#d4af37" stroke-width="2.5"/><path d="M50 35v20M35 45h30M50 55l-12 20M50 55l12 20" stroke="#d4af37" stroke-width="2.5" fill="none"/>',
-            '王': '<path d="M30 72h40M40 72V42M60 72V42M30 42h40M50 42V25M38 30h24" stroke="#d4af37" stroke-width="2.5"/><circle cx="50" cy="52" r="3" fill="#d4af37"/>',
-            '石': '<path d="M32 72L28 48L50 32l22 16-4 24" fill="none" stroke="#d4af37" stroke-width="2.5"/>',
-            '历': '<rect x="32" y="22" width="36" height="56" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M32 38h36M32 54h36M32 70h36" stroke="#d4af37" stroke-width="1.5"/>',
-            '文': '<path d="M50 20v60M28 38q22-10 44 0M32 58q18 8 36 0" stroke="#d4af37" stroke-width="2.5" fill="none"/>',
-            '转': '<circle cx="50" cy="50" r="22" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M50 28v44M28 50h44" stroke="#d4af37"/><path d="M36 36l28 28M64 36L36 64" stroke="#d4af37" stroke-width="2"/>',
+            // 天体类
+            '日': '<circle cx="50" cy="50" r="20" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="50" r="6" fill="#d4af37"/><path d="M50 20v10M50 70v10M20 50h10M70 50h10" stroke="#d4af37" stroke-width="3"/><path d="M29 29l7 7M71 71l-7-7M71 29l-7 7M29 71l7-7" stroke="#d4af37" stroke-width="2"/>',
+            '月': '<path d="M65 20A30 30 0 1 1 65 80A22 22 0 1 0 65 20" fill="#d4af37" opacity="0.8"/><circle cx="58" cy="40" r="3" fill="#0a0908" opacity="0.3"/><circle cx="62" cy="60" r="4" fill="#0a0908" opacity="0.3"/>',
+            '星': '<polygon points="50,15 58,38 82,38 63,52 71,75 50,62 29,75 37,52 18,38 42,38" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="48" r="4" fill="#d4af37"/><circle cx="28" cy="28" r="2" fill="#d4af37" opacity="0.6"/><circle cx="72" cy="24" r="2" fill="#d4af37" opacity="0.6"/><circle cx="75" cy="70" r="2" fill="#d4af37" opacity="0.6"/>',
+            '天': '<path d="M10 55Q50 25 90 55" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="32" cy="40" r="3" fill="#d4af37"/><circle cx="52" cy="32" r="4" fill="#d4af37"/><circle cx="72" cy="40" r="3" fill="#d4af37"/><path d="M20 65h60" stroke="#d4af37" stroke-width="2" opacity="0.5"/>',
+            
+            // 自然类
+            '山': '<path d="M20 80L35 35L50 55L65 30L80 80" fill="none" stroke="#d4af37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M35 35v-5M65 30v-5" stroke="#d4af37" stroke-width="2"/>',
+            '水': '<path d="M20 45Q30 35 40 45T60 45T80 45" fill="none" stroke="#d4af37" stroke-width="3"/><path d="M15 65Q25 55 35 65T55 65T75 65" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="30" cy="50" r="2" fill="#d4af37" opacity="0.6"/><circle cx="60" cy="68" r="2" fill="#d4af37" opacity="0.6"/>',
+            '火': '<path d="M50 20Q32 48 37 68Q42 58 50 72Q58 58 63 68Q68 48 50 20" fill="#d4af37" opacity="0.8"/><path d="M50 35Q42 55 47 65Q50 55 50 65Q50 55 53 65Q58 55 50 35" fill="#0a0908"/><path d="M32 80h36" stroke="#d4af37" stroke-width="2" opacity="0.5"/>',
+            '木': '<line x1="50" y1="80" x2="50" y2="45" stroke="#d4af37" stroke-width="4"/><line x1="50" y1="58" x2="32" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="52" x2="68" y2="38" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="32" r="7" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            '林': '<line x1="35" y1="75" x2="35" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="55" x2="20" y2="45" stroke="#d4af37" stroke-width="2"/><circle cx="35" cy="35" r="6" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="65" y1="75" x2="65" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="65" y1="55" x2="80" y2="45" stroke="#d4af37" stroke-width="2"/><circle cx="65" cy="35" r="6" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            '石': '<path d="M30 75L26 48L50 30L74 48L70 75" fill="none" stroke="#d4af37" stroke-width="3" stroke-linejoin="round"/><path d="M36 52l9 4M56 48l8 4M40 65l20-5" stroke="#d4af37" stroke-width="2"/>',
+            '土': '<line x1="25" y1="72" x2="75" y2="72" stroke="#d4af37" stroke-width="4"/><line x1="35" y1="72" x2="35" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="65" y1="72" x2="65" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="45" x2="65" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="45" x2="50" y2="28" stroke="#d4af37" stroke-width="3"/><line x1="40" y1="28" x2="60" y2="28" stroke="#d4af37" stroke-width="3"/>',
+            '川': '<line x1="25" y1="25" x2="20" y2="75" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/><line x1="75" y1="25" x2="80" y2="75" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>',
+            
+            // 人类类
+            '人': '<circle cx="50" cy="25" r="9" fill="none" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="34" x2="50" y2="58" stroke="#d4af37" stroke-width="3"/><line x1="32" y1="44" x2="68" y2="44" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="58" x2="36" y2="82" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="58" x2="64" y2="82" stroke="#d4af37" stroke-width="3"/>',
+            '王': '<line x1="28" y1="78" x2="72" y2="78" stroke="#d4af37" stroke-width="3"/><line x1="38" y1="78" x2="38" y2="42" stroke="#d4af37" stroke-width="3"/><line x1="62" y1="78" x2="62" y2="42" stroke="#d4af37" stroke-width="3"/><line x1="28" y1="42" x2="72" y2="42" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="42" x2="50" y2="22" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="27" x2="65" y2="27" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="56" r="4" fill="#d4af37"/>',
+            '神': '<circle cx="50" cy="32" r="11" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="32" r="4" fill="#d4af37"/><line x1="50" y1="43" x2="50" y2="65" stroke="#d4af37" stroke-width="3"/><path d="M36 56Q50 46 64 56" fill="none" stroke="#d4af37" stroke-width="3"/><line x1="36" y1="56" x2="32" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="64" y1="56" x2="68" y2="80" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="65" x2="50" y2="85" stroke="#d4af37" stroke-width="3"/><path d="M20 30h10M70 30h10" stroke="#d4af37" stroke-width="2"/>',
+            '眼': '<path d="M20 50Q50 22 80 50Q50 78 20 50" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="50" r="14" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="50" r="5" fill="#d4af37"/><circle cx="53" cy="47" r="2" fill="#0a0908"/>',
+            '手': '<line x1="50" y1="78" x2="50" y2="52" stroke="#d4af37" stroke-width="4"/><line x1="50" y1="56" x2="32" y2="42" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="52" x2="42" y2="34" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="52" x2="58" y2="34" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="56" x2="68" y2="42" stroke="#d4af37" stroke-width="3"/><circle cx="32" cy="42" r="3" fill="#d4af37"/><circle cx="42" cy="34" r="3" fill="#d4af37"/><circle cx="58" cy="34" r="3" fill="#d4af37"/><circle cx="68" cy="42" r="3" fill="#d4af37"/>',
+            '心': '<path d="M50 80Q20 55 20 35Q20 20 35 20Q45 20 50 30Q55 20 65 20Q80 20 80 35Q80 55 50 80" fill="#d4af37" opacity="0.8"/><path d="M35 35Q42 28 50 35Q58 28 65 35" fill="none" stroke="#0a0908" stroke-width="2" opacity="0.3"/>',
+            
+            // 抽象类
+            '永': '<path d="M30 32Q50 22 70 32T70 52T50 62T30 52" fill="none" stroke="#d4af37" stroke-width="3"/><path d="M30 52Q50 42 70 52T70 72T50 82T30 72" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="42" r="3" fill="#d4af37"/><circle cx="50" cy="72" r="3" fill="#d4af37"/>',
+            '生': '<line x1="50" y1="78" x2="50" y2="52" stroke="#d4af37" stroke-width="3"/><line x1="32" y1="62" x2="68" y2="62" stroke="#d4af37" stroke-width="3"/><path d="M50 52L36 38M50 52L64 38" stroke="#d4af37" stroke-width="3"/><circle cx="36" cy="32" r="4" fill="#d4af37"/><circle cx="64" cy="32" r="4" fill="#d4af37"/><circle cx="50" cy="22" r="3" fill="#d4af37"/>',
+            '死': '<circle cx="36" cy="36" r="7" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="64" cy="36" r="7" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="50" y1="46" x2="50" y2="66" stroke="#d4af37" stroke-width="3"/><line x1="36" y1="56" x2="64" y2="56" stroke="#d4af37" stroke-width="3"/><line x1="32" y1="76" x2="44" y2="66" stroke="#d4af37" stroke-width="3"/><line x1="68" y1="76" x2="56" y2="66" stroke="#d4af37" stroke-width="3"/>',
+            '时': '<circle cx="50" cy="50" r="28" fill="none" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="50" x2="50" y2="26" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="50" x2="70" y2="50" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="50" r="4" fill="#d4af37"/><path d="M30 30l5 5M70 30l-5 5M30 70l5-5M70 70l-5-5" stroke="#d4af37" stroke-width="2"/>',
+            '空': '<rect x="28" y="28" width="44" height="44" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="5,5"/><circle cx="50" cy="50" r="12" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="50" y1="20" x2="50" y2="35" stroke="#d4af37"/><line x1="50" y1="65" x2="50" y2="80" stroke="#d4af37"/><line x1="20" y1="50" x2="35" y2="50" stroke="#d4af37"/><line x1="65" y1="50" x2="80" y2="50" stroke="#d4af37"/>',
+            
+            // 动物类
+            '龙': '<path d="M32 62Q42 42 60 46T78 32" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="32" cy="62" r="5" fill="#d4af37"/><circle cx="78" cy="32" r="4" fill="#d4af37"/><path d="M52 46Q56 54 52 64Q48 72 56 82" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M60 42l5-5M60 50l7-2" stroke="#d4af37" stroke-width="2"/>',
+            '鸟': '<path d="M32 52Q42 32 60 36Q68 40 72 50" fill="none" stroke="#d4af37" stroke-width="3"/><circle cx="65" cy="40" r="3" fill="#d4af37"/><path d="M40 50L25 45M40 50L25 55" stroke="#d4af37" stroke-width="2"/><polygon points="48,48 44,60 54,60" fill="#d4af37"/><line x1="45" y1="70" x2="40" y2="85" stroke="#d4af37" stroke-width="2"/><line x1="55" y1="70" x2="60" y2="85" stroke="#d4af37" stroke-width="2"/>',
+            '蛇': '<path d="M22 62Q36 42 50 62T78 52" fill="none" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/><circle cx="78" cy="52" r="4" fill="#d4af37"/><line x1="74" y1="48" x2="70" y2="44" stroke="#d4af37" stroke-width="2"/><line x1="74" y1="56" x2="70" y2="60" stroke="#d4af37" stroke-width="2"/><path d="M30 65Q40 70 35 80" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            '鱼': '<ellipse cx="52" cy="50" rx="22" ry="13" fill="none" stroke="#d4af37" stroke-width="3"/><polygon points="30,50 20,42 20,58" fill="#d4af37"/><circle cx="64" cy="46" r="3" fill="#d4af37"/><path d="M42 50L38 36M46 48L43 34" stroke="#d4af37" stroke-width="2"/><path d="M38 60Q52 65 66 60" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            
+            // 数字汉字
+            '一': '<line x1="30" y1="50" x2="70" y2="50" stroke="#d4af37" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="50" r="3" fill="#d4af37"/>',
+            '二': '<line x1="30" y1="38" x2="70" y2="38" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/><line x1="30" y1="62" x2="70" y2="62" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="38" r="2" fill="#d4af37"/><circle cx="50" cy="62" r="2" fill="#d4af37"/>',
+            '三': '<line x1="30" y1="28" x2="70" y2="28" stroke="#d4af37" stroke-width="3"/><line x1="30" y1="50" x2="70" y2="50" stroke="#d4af37" stroke-width="4"/><line x1="30" y1="72" x2="70" y2="72" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="28" r="2" fill="#d4af37"/><circle cx="50" cy="50" r="3" fill="#d4af37"/><circle cx="50" cy="72" r="2" fill="#d4af37"/>',
+            
+            // 常用扩展
+            '大': '<line x1="50" y1="20" x2="50" y2="70" stroke="#d4af37" stroke-width="4"/><line x1="25" y1="45" x2="75" y2="45" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="70" x2="65" y2="70" stroke="#d4af37" stroke-width="3"/>',
+            '小': '<line x1="50" y1="25" x2="50" y2="75" stroke="#d4af37" stroke-width="3"/><line x1="35" y1="40" x2="65" y2="40" stroke="#d4af37" stroke-width="2"/><line x1="40" y1="75" x2="60" y2="75" stroke="#d4af37" stroke-width="2"/>',
+            '中': '<rect x="35" y="20" width="30" height="60" fill="none" stroke="#d4af37" stroke-width="3"/><line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="2"/><line x1="35" y1="50" x2="65" y2="50" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="50" r="3" fill="#d4af37"/>',
+            '华': '<line x1="50" y1="15" x2="50" y2="85" stroke="#d4af37" stroke-width="3"/><line x1="25" y1="35" x2="75" y2="35" stroke="#d4af37" stroke-width="2"/><line x1="30" y1="55" x2="70" y2="55" stroke="#d4af37" stroke-width="2"/><line x1="35" y1="75" x2="65" y2="75" stroke="#d4af37" stroke-width="2"/>',
+            '民': '<line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="3"/><path d="M30 40Q50 30 70 40" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M25 60Q50 50 75 60" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            '族': '<rect x="25" y="25" width="50" height="50" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="25" y1="50" x2="75" y2="50" stroke="#d4af37" stroke-width="2"/><line x1="50" y1="25" x2="50" y2="75" stroke="#d4af37" stroke-width="2"/><circle cx="37" cy="37" r="3" fill="#d4af37"/><circle cx="63" cy="37" r="3" fill="#d4af37"/><circle cx="37" cy="63" r="3" fill="#d4af37"/><circle cx="63" cy="63" r="3" fill="#d4af37"/>',
+            '复': '<path d="M20 30L50 20L80 30L80 70L50 80L20 70Z" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="2"/><line x1="20" y1="50" x2="80" y2="50" stroke="#d4af37" stroke-width="2"/>',
+            '兴': '<path d="M50 15L65 35L80 30L70 50L80 70L50 60L20 70L30 50L20 30L35 35Z" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="45" r="4" fill="#d4af37"/>',
+            '万': '<path d="M30 25Q50 35 70 25M50 35v45M35 55q15 5 30 0" stroke="#d4af37" stroke-width="3" fill="none"/>',
+            '岁': '<path d="M25 30h50M25 50h50M25 70h50M35 30v40M65 30v40" stroke="#d4af37" stroke-width="2.5"/><circle cx="50" cy="60" r="5" fill="none" stroke="#d4af37"/>',
+            '爱': '<path d="M50 25Q35 35 35 50Q35 70 50 80Q65 70 65 50Q65 35 50 25" fill="#d4af37" opacity="0.8"/><path d="M42 45L50 55L58 45" fill="none" stroke="#0a0908" stroke-width="2"/>',
+            '您': '<line x1="35" y1="25" x2="35" y2="75" stroke="#d4af37" stroke-width="3"/><path d="M30 35q20-5 25 5M30 50q20-5 25 5" stroke="#d4af37" stroke-width="2" fill="none"/><circle cx="60" cy="65" r="8" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            '好': '<circle cx="40" cy="35" r="10" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="60" y1="25" x2="60" y2="75" stroke="#d4af37" stroke-width="3"/><line x1="45" y1="45" x2="75" y2="45" stroke="#d4af37" stroke-width="2"/>',
+            '请': '<path d="M35 25v50M30 35q20-5 25 5" stroke="#d4af37" stroke-width="2" fill="none"/><rect x="55" y="30" width="25" height="40" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="55" y1="45" x2="80" y2="45" stroke="#d4af37"/>',
+            '谢': '<path d="M35 25v50M30 35q15-3 20 3" stroke="#d4af37" stroke-width="2" fill="none"/><path d="M60 30l15 5-5 15-10-5z" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="67" y1="50" x2="60" y2="75" stroke="#d4af37" stroke-width="2"/>',
+            '风': '<path d="M25 35q25-5 50 0M30 55q20 5 40 0M35 75q15 5 30 0" stroke="#d4af37" stroke-width="2.5" fill="none"/><circle cx="75" cy="30" r="3" fill="#d4af37"/>',
+            '云': '<path d="M25 45q15-10 30 0t30 0" fill="none" stroke="#d4af37" stroke-width="2.5"/><path d="M20 60q20-8 40 0t40 0" fill="none" stroke="#d4af37" stroke-width="2.5"/><circle cx="30" cy="35" r="3" fill="#d4af37"/><circle cx="70" cy="35" r="3" fill="#d4af37"/>',
+            '你': '<line x1="35" y1="25" x2="35" y2="75" stroke="#d4af37" stroke-width="3"/><path d="M30 35q20-5 25 5M30 50q20-5 25 5" stroke="#d4af37" stroke-width="2" fill="none"/><circle cx="60" cy="65" r="8" fill="none" stroke="#d4af37" stroke-width="2"/>',
+            '界': '<rect x="30" y="25" width="40" height="50" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="30" y1="40" x2="70" y2="40" stroke="#d4af37"/><line x1="30" y1="55" x2="70" y2="55" stroke="#d4af37"/><circle cx="50" cy="65" r="5" fill="none" stroke="#d4af37"/>',
+            '世': '<line x1="25" y1="35" x2="75" y2="35" stroke="#d4af37" stroke-width="2.5"/><line x1="25" y1="50" x2="75" y2="50" stroke="#d4af37" stroke-width="2.5"/><line x1="25" y1="65" x2="75" y2="65" stroke="#d4af37" stroke-width="2.5"/><line x1="50" y1="25" x2="50" y2="75" stroke="#d4af37" stroke-width="2.5"/>',
+            
+            // 转换器相关
+            '转': '<circle cx="50" cy="50" r="25" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M50 25v50M25 50h50" stroke="#d4af37"/><path d="M35 35l30 30M65 35L35 65" stroke="#d4af37" stroke-width="2"/>',
             '换': '<rect x="28" y="28" width="44" height="44" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="40" cy="40" r="4" fill="#d4af37"/><circle cx="60" cy="40" r="4" fill="#d4af37"/><circle cx="40" cy="60" r="4" fill="#d4af37"/><circle cx="60" cy="60" r="4" fill="#d4af37"/>',
-            '器': '<rect x="22" y="22" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="54" y="22" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="22" y="54" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="54" y="54" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/>',
-            '世': '<path d="M25 35h50M25 50h50M25 65h50M50 25v50" stroke="#d4af37" stroke-width="2.5"/>',
-            '界': '<rect x="30" y="25" width="40" height="50" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M30 40h40M30 55h40" stroke="#d4af37"/><circle cx="50" cy="65" r="5" fill="none" stroke="#d4af37"/>',
-            '你': '<path d="M35 25v50M30 35q20-5 25 5M30 50q20-5 25 5" stroke="#d4af37" stroke-width="2" fill="none"/><circle cx="55" cy="65" r="8" fill="none" stroke="#d4af37"/>',
-            '好': '<circle cx="40" cy="35" r="10" fill="none" stroke="#d4af37" stroke-width="2"/><path d="M60 25v50M45 45h30" stroke="#d4af37" stroke-width="2.5"/>'
+            '器': '<rect x="22" y="22" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="54" y="22" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="22" y="54" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/><rect x="54" y="54" width="24" height="24" fill="none" stroke="#d4af37" stroke-width="2"/>'
         };
 
-        // 英文大写（神圣风格 - 带框/冠饰）
+        // ==================== 英文系统（保持不变） ====================
         const enUpper = {
             'A': '<path d="M30 70L50 25L70 70M38 52h24" stroke="#d4af37" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="25" y="20" width="50" height="60" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>',
             'B': '<path d="M35 25v45h20q10 0 10-10t-10-10h-15M35 45h18q10 0 10-10t-10-10h-18" stroke="#d4af37" stroke-width="3" fill="none"/><rect x="30" y="20" width="40" height="55" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>',
-            'C': '<path d="M65 30q-20-10-30 10t0 40q10 20 30 10" stroke="#d4af37" stroke-width="3" fill="none"/><line x1="35" y1="25" x2="35" y2="20" stroke="#d4af37"/><line x1="65" y1="25" x2="65" y2="20" stroke="#d4af37"/>',
+            'C': '<path d="M65 30q-20-10-30 10t0 40q10 20 30 10" stroke="#d4af37" stroke-width="3" fill="none"/>',
             'D': '<path d="M35 25v45h15q20 0 20-22.5t-20-22.5h-15" stroke="#d4af37" stroke-width="3" fill="none"/><rect x="30" y="20" width="45" height="55" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>',
             'E': '<path d="M65 25h-30v45h30M35 45h25" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="50" cy="25" r="3" fill="#d4af37"/><circle cx="50" cy="70" r="3" fill="#d4af37"/>',
             'F': '<path d="M65 25h-30v45M35 45h25" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="50" cy="25" r="3" fill="#d4af37"/>',
-            'G': '<path d="M65 35q-15-15-30 0t0 40q15 15 30 0v-15h-12" stroke="#d4af37" stroke-width="3" fill="none"/><rect x="30" y="20" width="45" height="60" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>',
+            'G': '<path d="M65 35q-15-15-30 0t0 40q15 15 30 0v-15h-12" stroke="#d4af37" stroke-width="3" fill="none"/>',
             'H': '<path d="M35 25v45M65 25v45M35 45h30" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="35" cy="25" r="3" fill="#d4af37"/><circle cx="65" cy="25" r="3" fill="#d4af37"/>',
             'I': '<path d="M50 25v45M35 25h30M35 70h30" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="50" cy="48" r="4" fill="#d4af37"/>',
-            'J': '<path d="M60 25v35q0 15-15 15t-15-15" stroke="#d4af37" stroke-width="3" fill="none"/><line x1="60" y1="25" x2="60" y2="20" stroke="#d4af37"/>',
+            'J': '<path d="M60 25v35q0 15-15 15t-15-15" stroke="#d4af37" stroke-width="3" fill="none"/>',
             'K': '<path d="M35 25v45M35 45l25-20M35 45l25 25" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="35" cy="25" r="3" fill="#d4af37"/><circle cx="60" cy="25" r="3" fill="#d4af37"/>',
             'L': '<path d="M40 25v40h25" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="40" cy="25" r="3" fill="#d4af37"/><circle cx="65" cy="65" r="3" fill="#d4af37"/>',
             'M': '<path d="M30 70V30q0-5 5-2l15 20 15-20q5-3 5 2v40" stroke="#d4af37" stroke-width="3" fill="none"/><circle cx="50" cy="28" r="3" fill="#d4af37"/>',
@@ -355,7 +301,6 @@
             'Z': '<path d="M35 30h30L35 70h30" stroke="#d4af37" stroke-width="3" fill="none" stroke-linejoin="round"/><circle cx="35" cy="30" r="3" fill="#d4af37"/><circle cx="65" cy="70" r="3" fill="#d4af37"/>'
         };
 
-        // 英文小写（基础几何）
         const enLower = {
             'a': '<circle cx="50" cy="50" r="15" fill="none" stroke="#d4af37" stroke-width="2"/><line x1="60" y1="35" x2="60" y2="70" stroke="#d4af37" stroke-width="2"/>',
             'b': '<line x1="35" y1="25" x2="35" y2="70" stroke="#d4af37" stroke-width="2.5"/><circle cx="48" cy="52" r="13" fill="none" stroke="#d4af37" stroke-width="2"/>',
@@ -385,7 +330,7 @@
             'z': '<path d="M38 38h24L38 68h24" stroke="#d4af37" stroke-width="2.5" fill="none"/>'
         };
 
-        // 数字（玛雅风格点线系统）
+        // 数字（玛雅系统）
         const numbers = {
             '0': '<ellipse cx="50" cy="50" rx="18" ry="22" fill="none" stroke="#d4af37" stroke-width="2.5" stroke-dasharray="4,2"/><circle cx="50" cy="50" r="3" fill="#d4af37"/>',
             '1': '<line x1="50" y1="30" x2="50" y2="70" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="50" r="4" fill="#d4af37"/>',
@@ -399,172 +344,131 @@
             '9': '<line x1="30" y1="30" x2="70" y2="30" stroke="#d4af37" stroke-width="3"/><line x1="30" y1="50" x2="70" y2="50" stroke="#d4af37" stroke-width="3"/><circle cx="35" cy="70" r="4" fill="#d4af37"/><circle cx="50" cy="70" r="4" fill="#d4af37"/><circle cx="65" cy="70" r="4" fill="#d4af37"/>'
         };
 
-        // 标点符号
-        const punctuation = {
+        // 标点
+        const puncts = {
             ' ': 'space',
             '，': '<path d="M35 65q15 10 30 0" fill="none" stroke="#d4af37" stroke-width="2"/><circle cx="50" cy="75" r="2" fill="#d4af37"/>',
             '。': '<circle cx="50" cy="70" r="4" fill="#d4af37"/><circle cx="50" cy="70" r="8" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.5"/>',
             '！': '<line x1="50" y1="25" x2="50" y2="55" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="68" r="4" fill="#d4af37"/>',
             '？': '<path d="M40 30q0-10 10-10t10 10q0 8-10 12v8" fill="none" stroke="#d4af37" stroke-width="2.5"/><circle cx="50" cy="68" r="3" fill="#d4af37"/>',
-            '：': '<circle cx="50" cy="38" r="3" fill="#d4af37"/><circle cx="50" cy="62" r="3" fill="#d4af37"/>',
-            '；': '<circle cx="50" cy="38" r="3" fill="#d4af37"/><path d="M45 65q5 10 10 0" fill="none" stroke="#d4af37" stroke-width="2"/>',
-            '、': '<line x1="45" y1="65" x2="55" y2="75" stroke="#d4af37" stroke-width="2" stroke-linecap="round"/>',
             '.': '<circle cx="50" cy="70" r="3" fill="#d4af37"/>',
             ',': '<path d="M45 65l5 15" stroke="#d4af37" stroke-width="2" stroke-linecap="round"/>',
-            '!': '<line x1="50" y1="25" x2="50" y2="55" stroke="#d4af37" stroke-width="3"/><circle cx="50" cy="65" r="3" fill="#d4af37"/>',
-            '?': '<path d="M40 30q0-8 10-8t10 8q0 6-10 10v6" fill="none" stroke="#d4af37" stroke-width="2.5"/><circle cx="50" cy="65" r="3" fill="#d4af37"/>',
-            ':': '<circle cx="50" cy="40" r="3" fill="#d4af37"/><circle cx="50" cy="60" r="3" fill="#d4af37"/>',
-            ';': '<circle cx="50" cy="40" r="3" fill="#d4af37"/><path d="M48 62l4 8" stroke="#d4af37" stroke-width="2"/>',
-            '-': '<line x1="30" y1="50" x2="70" y2="50" stroke="#d4af37" stroke-width="2"/>',
-            '—': '<line x1="20" y1="50" x2="80" y2="50" stroke="#d4af37" stroke-width="3"/>',
-            '…': '<circle cx="35" cy="70" r="2" fill="#d4af37"/><circle cx="50" cy="70" r="2" fill="#d4af37"/><circle cx="65" cy="70" r="2" fill="#d4af37"/>'
+            '、': '<line x1="45" y1="65" x2="55" y2="75" stroke="#d4af37" stroke-width="2"/>'
         };
 
-        // 生僻字生成器（基于Unicode）
+        // 生僻字生成（后备方案）
         function generateRare(char) {
             const code = char.charCodeAt(0);
-            const hash = code % 26;
-            const letters = 'abcdefghijklmnopqrstuvwxyz';
-            const base = enLower[letters[hash]] || enLower['a'];
-            
-            // 添加修饰表示生僻
-            const modifier = `<circle cx="50" cy="15" r="2" fill="#d4af37" opacity="0.6"/>
-                             <circle cx="15" cy="50" r="2" fill="#d4af37" opacity="0.6"/>
-                             <circle cx="85" cy="50" r="2" fill="#d4af37" opacity="0.6"/>`;
-            return {svg: base + modifier, type: 'rare'};
+            const map = 'abcdefghijklmnopqrstuvwxyz';
+            const letter = map[code % 26];
+            const base = enLower[letter] || enLower['a'];
+            const deco = `<circle cx="15" cy="50" r="2" fill="#d4af37" opacity="0.5"/><circle cx="85" cy="50" r="2" fill="#d4af37" opacity="0.5"/>`;
+            return {svg: base + deco, type: 'rare'};
         }
 
-        // 核心转换函数
-        function getGlyph(char) {
-            // 1. 中文标准库
+        // 转换主函数
+        function convertChar(char) {
+            // 优先级：汉字 > 大写 > 小写 > 数字 > 标点 > 生僻
             if (cnLib[char]) return {svg: cnLib[char], type: 'cn', char};
-            
-            // 2. 英文大写
-            if (enUpper[char]) return {svg: enUpper[char], type: 'upper', char};
-            
-            // 3. 英文小写
-            if (enLower[char]) return {svg: enLower[char], type: 'lower', char};
-            
-            // 4. 数字
+            if (enUpper[char]) return {svg: enUpper[char], type: 'en-upper', char};
+            if (enLower[char]) return {svg: enLower[char], type: 'en-lower', char};
             if (numbers[char]) return {svg: numbers[char], type: 'num', char};
-            
-            // 5. 标点
-            if (punctuation[char]) {
-                if (punctuation[char] === 'space') return {type: 'space'};
-                return {svg: punctuation[char], type: 'punct', char};
+            if (puncts[char]) {
+                if (puncts[char] === 'space') return {type: 'space'};
+                return {svg: puncts[char], type: 'punct', char};
             }
-            
-            // 6. 其他生僻字符
             return {...generateRare(char), char};
         }
 
-        // 实时转换主函数
-        function convert() {
+        function render() {
             const input = document.getElementById('input').value;
-            const grid = document.getElementById('grid');
+            const container = document.getElementById('container');
             const stats = document.getElementById('stats');
-            const showTags = document.getElementById('showTags').checked;
-            const upperSpecial = document.getElementById('uppercaseSpecial').checked;
-            const keepSpace = document.getElementById('keepSpace').checked;
+            const showLabel = document.getElementById('showLabel').checked;
+            const showSpace = document.getElementById('showSpace').checked;
             
             if (!input) {
-                grid.innerHTML = '<div class="empty-state">输入文字以查看转换结果</div>';
+                container.innerHTML = '<div class="empty-state">输入文字以查看转换结果</div>';
                 stats.textContent = '等待输入...';
                 return;
             }
             
-            grid.innerHTML = '';
+            container.innerHTML = '';
             let count = 0;
-            let types = {cn:0, upper:0, lower:0, num:0, punct:0, space:0, rare:0};
+            let types = {cn:0, 'en-upper':0, 'en-lower':0, num:0, punct:0, rare:0};
             
             for (let char of input) {
-                const g = getGlyph(char);
+                const g = convertChar(char);
                 
                 if (g.type === 'space') {
-                    if (keepSpace) {
+                    if (showSpace) {
                         const div = document.createElement('div');
-                        div.className = 'glyph-block space';
-                        grid.appendChild(div);
-                        types.space++;
+                        div.className = 'glyph-card';
+                        div.style.opacity = '0.2';
+                        div.style.borderStyle = 'dashed';
+                        container.appendChild(div);
                     }
                     continue;
                 }
                 
-                const div = document.createElement('div');
-                div.className = 'glyph-block';
+                const card = document.createElement('div');
+                card.className = `glyph-card ${g.type}`;
+                card.innerHTML = `
+                    <svg class="glyph-svg" viewBox="0 0 100 100">${g.svg}</svg>
+                    ${showLabel ? `<span class="glyph-label">${char}</span>` : ''}
+                `;
+                card.title = `${char} (${g.type})`;
+                card.onclick = () => {
+                    // 点击复制SVG
+                    navigator.clipboard.writeText(`<svg viewBox="0 0 100 100">${g.svg}</svg>`);
+                    card.style.borderColor = '#d4af37';
+                    setTimeout(() => card.style.borderColor = '', 300);
+                };
                 
-                if (g.type === 'upper' && upperSpecial) div.classList.add('uppercase');
-                if (g.type === 'punct') div.classList.add('punctuation');
-                
-                div.innerHTML = `<svg class="glyph-svg" viewBox="0 0 100 100">${g.svg}</svg>`;
-                if (showTags) div.innerHTML += `<span class="glyph-tag">${char}</span>`;
-                
-                div.title = `字符: ${char} | 类型: ${g.type}`;
-                div.onclick = () => copyGlyph(g.svg);
-                
-                grid.appendChild(div);
+                container.appendChild(card);
                 count++;
                 types[g.type] = (types[g.type] || 0) + 1;
             }
             
-            // 更新统计
-            const statText = [];
-            if (types.cn) statText.push(`${types.cn}中文`);
-            if (types.upper) statText.push(`${types.upper}大写`);
-            if (types.lower) statText.push(`${types.lower}小写`);
-            if (types.num) statText.push(`${types.num}数字`);
-            if (types.punct) statText.push(`${types.punct}标点`);
-            if (types.space) statText.push(`${types.space}空格`);
-            if (types.rare) statText.push(`${types.rare}生僻`);
+            // 统计文本
+            const parts = [];
+            if (types.cn) parts.push(`${types.cn}汉字`);
+            if (types['en-upper']) parts.push(`${types['en-upper']}大写`);
+            if (types['en-lower']) parts.push(`${types['en-lower']}小写`);
+            if (types.num) parts.push(`${types.num}数字`);
+            if (types.punct) parts.push(`${types.punct}标点`);
             
-            stats.textContent = `共 ${count} 字符 (${statText.join(' · ')})`;
+            stats.textContent = `共 ${count} 字符 ${parts.length ? '(' + parts.join(' · ') + ')' : ''}`;
         }
 
-        // 复制单个字符SVG
-        function copyGlyph(svg) {
-            const fullSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${svg}</svg>`;
-            navigator.clipboard.writeText(fullSVG).then(() => {
-                // 临时提示
-                const btn = event.currentTarget;
-                const original = btn.style.borderColor;
-                btn.style.borderColor = '#d4af37';
-                setTimeout(() => btn.style.borderColor = original, 300);
-            });
+        // 事件绑定
+        function init() {
+            const input = document.getElementById('input');
+            const realtime = document.getElementById('realtime');
+            
+            const doConvert = () => { if (realtime.checked) render(); };
+            
+            input.addEventListener('input', doConvert);
+            document.getElementById('showLabel').addEventListener('change', render);
+            document.getElementById('showSpace').addEventListener('change', render);
+            
+            render();
         }
 
-        // 清空
-        function clearText() {
+        function manualConvert() { render(); }
+        
+        function clearAll() {
             document.getElementById('input').value = '';
-            convert();
+            render();
             document.getElementById('input').focus();
         }
 
-        // 复制全部文本
-        function copyText() {
-            const input = document.getElementById('input').value;
-            navigator.clipboard.writeText(input).then(() => alert('原文已复制'));
+        function copySVG() {
+            const all = Array.from(document.querySelectorAll('.glyph-svg')).map(s => s.innerHTML).join('\n');
+            navigator.clipboard.writeText(all).then(() => alert('已复制所有SVG路径到剪贴板'));
         }
 
-        // 导出SVG（简化版提示）
-        function downloadSVG() {
-            alert('提示：可使用浏览器"打印"功能保存为PDF，或截图保存转换结果。');
-        }
-
-        // 事件监听
-        document.getElementById('input').addEventListener('input', () => {
-            if (document.getElementById('realtime').checked) convert();
-        });
-
-        // 选项变更实时更新
-        ['showTags', 'uppercaseSpecial', 'keepSpace'].forEach(id => {
-            document.getElementById(id).addEventListener('change', convert);
-        });
-
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            convert();
-            document.getElementById('input').focus();
-        });
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
